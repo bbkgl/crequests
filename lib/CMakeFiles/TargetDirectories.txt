@@ -1,0 +1,4 @@
+/home/bbkgl/myvscode/crequests/lib/CMakeFiles/edit_cache.dir
+/home/bbkgl/myvscode/crequests/lib/CMakeFiles/main.dir
+/home/bbkgl/myvscode/crequests/lib/CMakeFiles/rebuild_cache.dir
+/home/bbkgl/myvscode/crequests/lib/CMakeFiles/libcrequests.dir

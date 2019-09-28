@@ -1,0 +1,46 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../base/utils.h
+arpa/inet.h
+-
+netdb.h
+-
+sys/socket.h
+-
+cstdio
+-
+string
+-
+fcntl.h
+-
+
+../include/socket.h
+sys/socket.h
+-
+arpa/inet.h
+-
+cstring
+-
+unistd.h
+-
+string
+-
+fstream
+-
+
+/home/bbkgl/myvscode/crequests/src/socket.cpp
+iostream
+-
+errno.h
+-
+socket.h
+/home/bbkgl/myvscode/crequests/src/socket.h
+utils.h
+/home/bbkgl/myvscode/crequests/src/utils.h
+

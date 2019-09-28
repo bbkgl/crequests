@@ -10,7 +10,7 @@ int main() {
     std::string host = "www.baidu.com";
     std::string addr = bbkgl::get_host(host);
     std::stringstream stream;
-    stream << "GET https://" << host << " HTTP/1.0\r\n";
+    stream << "GET https://" << host << " HTTP/1.1\r\n";
     stream << "Accept: */*\r\n";
     // stream << "Accept-Encoding: gzip, deflate,
     // br\r\n";//不要编码，否则还得多一个解码的步骤
@@ -25,6 +25,6 @@ int main() {
     std::shared_ptr<Socket> sockhttps = std::make_shared<SSLSocket>(addr);
     sockhttps->sendl(stream.str());
     sockhttps->recvl();
-    std::cout << sockhttps->get_head() << std::endl;
+    // std::cout << sockhttps->get_head() << std::endl;
     return 0;
 }

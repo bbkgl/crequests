@@ -57,6 +57,7 @@ int SSLSocket::recvl() {
     while (tlen > 0) {
         tlen = ::SSL_read(ssl_, buf, BUFF_SIZE);
         recv_str += buf;
+        out_html_ << buf << std::endl;
         if (first) {
             body_len = find_len(buf, head_len);
             first = false;
@@ -70,6 +71,5 @@ int SSLSocket::recvl() {
     }
     printf("%d\n", recv_str.size());
     body_ = recv_str;
-    out_html_ << body_;
     return 0;
 }

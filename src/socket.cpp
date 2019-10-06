@@ -5,14 +5,17 @@
 
 int Socket::find_len(std::string text, int &header_len) {
     int pos = text.find("Content-Length:");
-    // 如果是chunked
-    if (pos == std::string::npos) return -1;
-    int left = pos + 15;
-    int offset = 1;   // 计算偏移量
-    for (; text[left + offset] != '\r'; offset++) ;
     // 找到头部长度
     header_len = text.find("\r\n\r\n");
     header_len = header_len == std::string::npos ? -1 : header_len + 4;
+    // 判断是不是chunked编码
+    if (pos == std::string::npos || text.find("Transfer-Encoding: chunked") != std::string::npos) {
+        chunked_ = true;
+        return -1;
+    } else chunked_ = false;
+    int left = pos + 15;
+    int offset = 1;   // 计算偏移量
+    for (; text[left + offset] != '\r'; offset++) ;
     return std::stoi(text.substr(left, offset));
 }
 

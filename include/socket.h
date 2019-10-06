@@ -9,6 +9,7 @@
 #include <fstream>
 
 #define BUFF_SIZE 4096
+#define CRLF "\r\n"
 
 class Socket {
 public:
@@ -31,6 +32,7 @@ protected:
     std::string body_;
     struct sockaddr_in serv_addr_;
     std::ofstream out_html_;
+    bool chunked_;
 };
 
 #endif

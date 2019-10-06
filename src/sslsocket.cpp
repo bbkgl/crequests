@@ -1,5 +1,15 @@
 #include "sslsocket.h"
 
+
+void change(char *str, int len) {
+    for (int i = 0; i < len; i++) {
+        if (str[i] == '\n' && str[i-1] == '\r') {
+            str[i] = '\n';
+            str[i-1] = '\n';
+        }
+    }
+}
+
 SSLSocket::SSLSocket(std::string addr, int port, std::string out_path) : 
     Socket(addr, port, out_path) {
     //添加SSL的加密/HASH算法 
@@ -56,6 +66,7 @@ int SSLSocket::recvl() {
     bool first = true;
     while (tlen > 0) {
         tlen = ::SSL_read(ssl_, buf, BUFF_SIZE);
+        // change(buf, tlen);
         recv_str += buf;
         out_html_ << buf << std::endl;
         if (first) {

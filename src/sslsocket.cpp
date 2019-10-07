@@ -58,11 +58,21 @@ SSLSocket::~SSLSocket() {
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
     ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
-    // out_html_ << std::string(buff, buff + tlen);
-    return tlen;
+    int err = SSL_get_error(ssl_, tlen);
+    if (err == SSL_ERROR_NONE) {
+        return tlen;
+    } else if (err == SSL_ERROR_WANT_READ) {
+        return -1;
+    }
 }
 
 int SSLSocket::write_buff(const char *left, int remaining) {
     ssize_t w_len = ::SSL_write(ssl_, left, static_cast<size_t>(remaining));
+    int err = SSL_get_error(ssl_, w_len);
+    if (err == SSL_ERROR_NONE) {
+        return w_len;
+    } else if (err == SSL_ERROR_WANT_READ) {
+        return -1;
+    }
     return w_len;
 }

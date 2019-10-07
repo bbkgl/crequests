@@ -7,7 +7,7 @@
 #include "sslsocket.h"
 
 int main() {
-    std::string host = "www.bilibili.com";
+    std::string host = "www.baidu.com";
     std::string addr = bbkgl::get_host(host);
     std::stringstream stream;
     stream << "GET /" << " HTTP/1.1\r\n";

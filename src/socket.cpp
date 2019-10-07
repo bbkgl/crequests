@@ -66,44 +66,38 @@ int Socket::sendl(std::string content) {
         ssize_t tlen = write_buff(content.data() + left, remaining);
         if (tlen >= 0)
             remaining -= tlen;
-        else
-            return -1;
+        else {
+            usleep(10000);
+        }
         left += tlen;
     }
     return 0;
 }
 
 int Socket::recvl() {
+    std::string recv_str;
     char buff[BUFF_SIZE];
-    int tlen = 1, body_len = -1, head_len = 0, chunk_num = 0;
-    
-    // 读取响应头部，尽量多读取
-    tlen = read_buff(buff, BUFF_SIZE);
-    // 读取得到头部长度和头部内容
-    body_len = find_len(buff, head_len);
-    head_ = std::string(buff, buff + head_len);
-
-    // 如果是chunked编码控制长度
-    if (chunked_) {
-        // 得到chunk编码数字
-        int chunk_end = head_len + 4;
-        for (; buff[chunk_end] != '\n'; chunk_end++) ;
-        // chunk_end这时候应该是chunked编码数后面的第一个'\n'
-        sscanf(std::string(buff).substr(head_len, chunk_end - head_len).c_str(), "%x", &chunk_num);
-        // 修改chunk_num表示接下来要接收的长度
-        out_html_ << chunk_num << std::endl;
-        // 获得当前接收的所有内容
-        body_ = std::string(buff).substr(chunk_end + 1, tlen);
-        chunk_num -= body_.length();
-
-        while (chunk_num > 0) {
-            tlen = read_buff(buff, BUFF_SIZE);
-            std::string temp = std::string(buff, buff + tlen);
-            change(temp);
-            out_html_ << temp;
-            body_ += temp;
+    int tlen = 1;
+    bool flag = false;
+    sleep(1);
+    while (tlen) {
+        tlen = read_buff(buff, BUFF_SIZE);
+        if (tlen == 0) break;
+        else if (tlen == -1) {
+            usleep(100 * ONEMMSECOND);
+            // 连续两次-1就退出
+            if (flag) {
+                std::cout << "2333" << std::endl;
+                break;
+            }
+            flag = true;
+        } else {
+            flag = false;
+            out_html_ << buff << std::endl;
+            recv_str += std::string(buff, buff + tlen);
+            if (std::string(buff, buff + tlen).find("0\r\n\r\n") != std::string::npos)
+                break;
         }
     }
-
     return 0;
 }

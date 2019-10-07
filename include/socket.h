@@ -10,6 +10,7 @@
 
 #define BUFF_SIZE 4096
 #define CRLF "\r\n"
+#define ONEMMSECOND 1000
 
 class Socket {
 public:

@@ -7,8 +7,9 @@ public:
     SSLSocket(std::string addr, int port = 443, std::string out_path = "2333.html");
     ~SSLSocket();
 
-    virtual int sendl(std::string content);
-    virtual int recvl();
+    int read_buff(char *buff, const int read_len);
+    int write_buff(const char *left, int remaining);
+
 private:
     const SSL_METHOD *ssl_method_;
     SSL_CTX *ctx_;

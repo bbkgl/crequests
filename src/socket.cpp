@@ -3,11 +3,23 @@
 #include "socket.h"
 #include "utils.h"
 
+std::string Socket::recv_chunked(char *buff, int chunk_d) {
+    int tlen = -1;
+    std::string content;
+    while (chunk_d) {
+        tlen = std::min(BUFF_SIZE, chunk_d);
+        tlen = read_buff(buff, tlen);
+        content += std::string(buff, buff + tlen);
+        chunk_d -= tlen;
+    }
+    return content;
+}
+
 int Socket::find_len(std::string text, int &header_len) {
     int pos = text.find("Content-Length:");
     // 找到头部长度
     header_len = text.find("\r\n\r\n");
-    header_len = header_len == std::string::npos ? -1 : header_len + 4;
+    header_len = header_len == std::string::npos ? -1 : header_len;
     // 判断是不是chunked编码
     if (pos == std::string::npos || text.find("Transfer-Encoding: chunked") != std::string::npos) {
         chunked_ = true;
@@ -37,3 +49,47 @@ Socket::~Socket() {
     out_html_.close();
 }
 
+int Socket::sendl(std::string content) {
+    int left = 0;
+    int remaining = content.size();
+    while (remaining > 0) {
+        ssize_t tlen = write_buff(content.data() + left, remaining);
+        if (tlen >= 0)
+            remaining -= tlen;
+        else
+            return -1;
+        left += tlen;
+    }
+    return 0;
+}
+
+int Socket::recvl() {
+    char buff[BUFF_SIZE];
+    int tlen = 1, body_len = -1, head_len = 0, chunk_num = 0;
+    
+    // 读取响应头部，尽量多读取
+    tlen = read_buff(buff, BUFF_SIZE);
+    // 读取得到头部长度和头部内容
+    body_len = find_len(buff, head_len);
+    head_ = std::string(buff, buff + head_len);
+
+    // 如果是chunked编码控制长度
+    if (chunked_) {
+        // 得到chunk编码数字
+        int chunk_end = head_len + 4;
+        for (; buff[chunk_end] != '\n'; chunk_end++) ;
+        // chunk_end这时候应该是chunked编码数后面的第一个'\n'
+        sscanf(std::string(buff).substr(head_len, chunk_end - head_len).c_str(), "%x", &chunk_num);
+        // 修改chunk_num表示接下来要接收的长度
+        chunk_num -= (tlen - chunk_end - 2);
+        // 获得当前接收的所有内容
+        body_ = std::string(buff).substr(chunk_end + 1, tlen);
+        
+        while (chunk_num) {
+            body_ += recv_chunked(buff, chunk_num);
+
+        }
+    }
+
+    return 0;
+}

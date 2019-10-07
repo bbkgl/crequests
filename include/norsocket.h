@@ -6,8 +6,8 @@ public:
     NORSocket(std::string addr, int port, std::string out_path = "2333.html");
     ~NORSocket();
 
-    virtual int sendl(std::string content);
-    virtual int recvl();
+    int read_buff(char *buff, const int read_len);
+    int write_buff(const char *left, int remaining);
 
 private:
 

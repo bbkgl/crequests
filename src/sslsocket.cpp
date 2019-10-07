@@ -45,42 +45,13 @@ SSLSocket::~SSLSocket() {
 	SSL_CTX_free(ctx_);
 }
 
-int SSLSocket::sendl(std::string content) {
-    int left = 0;
-    int remaining = content.size();
-    while (remaining > 0) {
-        ssize_t tlen = ::SSL_write(ssl_, content.data() + left, static_cast<size_t>(remaining));
-        if (tlen >= 0)
-            remaining -= tlen;
-        else
-            return -1;
-        left += tlen;
-    }
-    return 0;
+int SSLSocket::read_buff(char *buff, const int read_len) {
+    ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
+    out_html_ << buff;
+    return tlen;
 }
 
-int SSLSocket::recvl() {
-    std::string recv_str;
-    char buf[BUFF_SIZE];
-    int tlen = 1, body_len = -1, head_len = 0;
-    bool first = true;
-    while (tlen > 0) {
-        tlen = ::SSL_read(ssl_, buf, BUFF_SIZE);
-        // change(buf, tlen);
-        recv_str += buf;
-        out_html_ << buf << std::endl;
-        if (first) {
-            body_len = find_len(buf, head_len);
-            first = false;
-            printf("header_len:%d, body_len:%d.\n", head_len, body_len);
-            head_ += recv_str.substr(0, head_len);
-            recv_str.erase(0, head_len);
-        }
-        if (recv_str.size() >= body_len)
-            break;
-        printf("%d\n", tlen);
-    }
-    printf("%d\n", recv_str.size());
-    body_ = recv_str;
-    return 0;
+int SSLSocket::write_buff(const char *left, int remaining) {
+    ssize_t w_len = ::SSL_write(ssl_, left, static_cast<size_t>(remaining));
+    return w_len;
 }

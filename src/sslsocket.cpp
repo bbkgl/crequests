@@ -1,14 +1,5 @@
+#include <errno.h>
 #include "sslsocket.h"
-
-
-void change(char *str, int len) {
-    for (int i = 0; i < len; i++) {
-        if (str[i] == '\n' && str[i-1] == '\r') {
-            str[i] = '\n';
-            str[i-1] = '\n';
-        }
-    }
-}
 
 SSLSocket::SSLSocket(std::string addr, int port, std::string out_path) : 
     Socket(addr, port, out_path) {
@@ -19,21 +10,41 @@ SSLSocket::SSLSocket(std::string addr, int port, std::string out_path) :
     //建立新的SSL上下文 
 	ctx_ = SSL_CTX_new(ssl_method_);
     // TCP连接
-    int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
-    if (flag == 0) 
-        std::cout << "TCPConnect success!" << std::endl; 
-    else
-        std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
+    while (0 != ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_))) {
+        if (errno == EINPROGRESS) {
+            std::cout << "TCPConnect nonblock wait!" << std::endl; 
+            usleep(1000);
+            int so_error;
+            socklen_t len = sizeof(so_error);
+            getsockopt(fd_, SOL_SOCKET, SO_ERROR, &so_error, &len);
+            if (so_error != 0) {
+                std::cerr << "TCPConnect error!" << std::endl;
+		        exit(1);
+            } else break;
+        } else {
+            std::cerr << "TCPConnect error!" << std::endl;
+		    exit(1);
+        }
+    }
+    std::cout << "TCPConnect success!" << std::endl; 
     // 创建ssl
     ssl_ = SSL_new(ctx_);
     //将SSL与TCP SOCKET 连接 
 	SSL_set_fd(ssl_ , fd_);
+    SSL_set_connect_state(ssl_);
 	//SSL连接 
-	flag = SSL_connect(ssl_);
-	if(flag == -1) {
-		std::cerr << "SSL ACCEPT error ";
-		exit(1);
+    int flag = -1;
+	while (-1 == SSL_connect(ssl_)) {
+        int ssl_conn_err = SSL_get_error(ssl_, flag);
+        if (SSL_ERROR_WANT_READ == ssl_conn_err || SSL_ERROR_WANT_WRITE == ssl_conn_err) {
+            std::cout << "SSLConnect nonblock wait!" << std::endl;
+            usleep(1000);
+        } else {
+            std::cerr << "SSL ACCEPT error " << std::endl;
+            exit(1);
+        }
 	}
+    std::cout << "SSLConnect nonblock success!" << std::endl;
 }
 
 SSLSocket::~SSLSocket() {
@@ -47,7 +58,7 @@ SSLSocket::~SSLSocket() {
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
     ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
-    out_html_ << buff;
+    // out_html_ << std::string(buff, buff + tlen);
     return tlen;
 }
 

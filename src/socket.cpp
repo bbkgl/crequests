@@ -3,10 +3,20 @@
 #include "socket.h"
 #include "utils.h"
 
+void change(std::string &str) {
+    int len = str.length();
+    for (int i = 1; i < len; i++) {
+        if (str[i] == '\n' && str[i-1] == '\r') {
+            str[i] = 'n';
+            str[i-1] = '&';
+        }
+    }
+}
+
 std::string Socket::recv_chunked(char *buff, int chunk_d) {
     int tlen = -1;
     std::string content;
-    while (chunk_d) {
+    while (chunk_d > 0) {
         tlen = std::min(BUFF_SIZE, chunk_d);
         tlen = read_buff(buff, tlen);
         content += std::string(buff, buff + tlen);
@@ -35,11 +45,11 @@ Socket::Socket(std::string addr, int port, std::string out_path) :
     port_(port) {
     // 申请socket
     fd_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    bbkgl::set_nonblock(fd_);
     bzero(&serv_addr_, sizeof serv_addr_);
     serv_addr_.sin_family = AF_INET;  //使用IPv4地址
     serv_addr_.sin_addr.s_addr = inet_addr(addr.c_str());  //具体的IP地址
     serv_addr_.sin_port = htons(port_);  //端口
-
     // 输出到文件、
     out_html_.open(out_path);
 }
@@ -81,13 +91,17 @@ int Socket::recvl() {
         // chunk_end这时候应该是chunked编码数后面的第一个'\n'
         sscanf(std::string(buff).substr(head_len, chunk_end - head_len).c_str(), "%x", &chunk_num);
         // 修改chunk_num表示接下来要接收的长度
-        chunk_num -= (tlen - chunk_end - 2);
+        out_html_ << chunk_num << std::endl;
         // 获得当前接收的所有内容
         body_ = std::string(buff).substr(chunk_end + 1, tlen);
-        
-        while (chunk_num) {
-            body_ += recv_chunked(buff, chunk_num);
+        chunk_num -= body_.length();
 
+        while (chunk_num > 0) {
+            tlen = read_buff(buff, BUFF_SIZE);
+            std::string temp = std::string(buff, buff + tlen);
+            change(temp);
+            out_html_ << temp;
+            body_ += temp;
         }
     }
 

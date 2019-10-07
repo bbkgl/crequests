@@ -7,7 +7,7 @@
 #include "sslsocket.h"
 
 int main() {
-    std::string host = "www.baidu.com";
+    std::string host = "www.bilibili.com";
     std::string addr = bbkgl::get_host(host);
     std::stringstream stream;
     stream << "GET /" << " HTTP/1.1\r\n";
@@ -24,7 +24,7 @@ int main() {
     stream << "\r\n";
     std::shared_ptr<Socket> sockhttps = std::make_shared<SSLSocket>(addr, 443, "2333.txt");
     sockhttps->sendl(stream.str());
-    std::cout << stream.str() << std::endl;
+    // std::cout << stream.str() << std::endl;
     sockhttps->recvl();
     return 0;
 }

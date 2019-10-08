@@ -1,28 +1,77 @@
 #include <iostream>
 #include <errno.h>
+#include <vector>
 #include "socket.h"
 #include "utils.h"
 
 void change(std::string &str) {
-    int len = str.length();
-    for (int i = 1; i < len; i++) {
-        if (str[i] == '\n' && str[i-1] == '\r') {
-            str[i] = 'n';
-            str[i-1] = '&';
+    // 首先找出所有"\r\n****\r\n"的位置
+    int _r1 = -1, _r2 = -1, _n1 = -1, _n2 = -1;
+    std::vector<int> pairs;
+    for (int i = 0; i < str.length(); i++) {
+        if (str[i] == '\r') {
+            if (_r1 == -1) 
+                _r1 = i;
+            else if (_n1 != -1)
+                _r2 = i;
+        } else if (_r1 != -1 && str[i] == '\n') {
+            if (_n1 == -1) 
+                _n1 = i;
+            else if (_r2 != -1) {
+                _n2 = i;
+                if (1 < _r2 - _n1 && _r2 - _n1 < 10) {
+                    bool flag = true;
+                    for (int j = _n1 + 1; j < _r2; j++) {
+                        if (!isalnum(str[j])) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    if (flag) {
+                        pairs.push_back(_r1);
+                        pairs.push_back(_n2);
+                        _r1 = -1;
+                        _r2 = -1;
+                        _n1 = -1;
+                        _n2 = -1;
+                    } else {
+                        _r1 = _r2;
+                        _n1 = _n2;
+                        _r2 = -1;
+                        _n2 = -1;
+                    }
+                } else {
+                    _r1 = _r2;
+                    _n1 = _n2;
+                    _r2 = -1;
+                    _n2 = -1;
+                }
+            }
         }
     }
-}
-
-std::string Socket::recv_chunked(char *buff, int chunk_d) {
-    int tlen = -1;
-    std::string content;
-    while (chunk_d > 0) {
-        tlen = std::min(BUFF_SIZE, chunk_d);
-        tlen = read_buff(buff, tlen);
-        content += std::string(buff, buff + tlen);
-        chunk_d -= tlen;
+    // DEBUG
+    for (int i = 0; i < pairs.size(); i += 2) {
+        int left = pairs[i], right = pairs[i + 1];
+        printf("(%d-%d)", pairs[i], pairs[i + 1]);
+        std::cout << str.substr(left, right - left + 1) << std::endl;
     }
-    return content;
+    
+    // 将所有的"\r\n****\r\n"去除
+    int count = 0;
+    for (int i = 1; i < pairs.size(); i += 2) {
+        int cur_left = pairs[i - 1];
+        int cur_right = pairs[i];
+        if (i < pairs.size() - 1) {
+            int next_left = pairs[i + 1];
+            int offset = count + (cur_right - cur_left) + 1;
+            for (int j = cur_right + 1; j < next_left; j++)
+                str[j - offset] = str[j];
+            count += (cur_right - cur_left) + 1;
+        } else {
+            count += (str.length() - cur_left);
+        }
+    }
+    str.erase(str.length() - count, count);
 }
 
 int Socket::find_len(std::string text, int &header_len) {
@@ -42,10 +91,10 @@ int Socket::find_len(std::string text, int &header_len) {
 }
 
 Socket::Socket(std::string addr, int port, std::string out_path) :
+    debug_txt_("debug.txt"),
     port_(port) {
     // 申请socket
     fd_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    bbkgl::set_nonblock(fd_);
     bzero(&serv_addr_, sizeof serv_addr_);
     serv_addr_.sin_family = AF_INET;  //使用IPv4地址
     serv_addr_.sin_addr.s_addr = inet_addr(addr.c_str());  //具体的IP地址
@@ -57,6 +106,7 @@ Socket::Socket(std::string addr, int port, std::string out_path) :
 Socket::~Socket() {
     close(fd_);
     out_html_.close();
+    debug_txt_.close();
 }
 
 int Socket::sendl(std::string content) {
@@ -75,29 +125,42 @@ int Socket::sendl(std::string content) {
 }
 
 int Socket::recvl() {
-    std::string recv_str;
     char buff[BUFF_SIZE];
     int tlen = 1;
-    bool flag = false;
-    sleep(1);
-    while (tlen) {
-        tlen = read_buff(buff, BUFF_SIZE);
-        if (tlen == 0) break;
-        else if (tlen == -1) {
-            usleep(100 * ONEMMSECOND);
-            // 连续两次-1就退出
-            if (flag) {
-                std::cout << "2333" << std::endl;
-                break;
+    int header_len = -1, body_len = -1;
+    tlen = read_buff(buff, BUFF_SIZE);
+    // 判断是否chunk编码并且找出响应头部长度
+    body_len = find_len(std::string(buff, buff + tlen), header_len);
+    head_ = std::string(buff, buff + header_len);
+    body_ = std::string(buff + header_len + 2, buff + tlen);
+    // 如果是chunk编码控制长度，则最后会出现“\r\n0\r\n\r\n”，以此判断结尾即可
+    if (chunked_) {
+        while (tlen) {
+            tlen = read_buff(buff, BUFF_SIZE);
+            // HTTP1.0短连接直接关闭，长连接分情况讨论
+            if (tlen == 0) break;
+            else {
+                std::string tail;
+                int left = 0, right = -1;
+                if (body_.length() > 5) {
+                    tail += body_.substr(body_.length() - 5, 5);
+                    left = 5;
+                }
+                else {
+                    tail += body_;
+                    left = body_.length();
+                }
+                tail += std::string(buff, buff + tlen);
+                if ((right = tail.find("0\r\n\r\n")) != std::string::npos) {
+                    body_ += tail.substr(left, right + 5 - left + 1);
+                    break;   
+                } else body_ += tail.substr(left);
             }
-            flag = true;
-        } else {
-            flag = false;
-            out_html_ << buff << std::endl;
-            recv_str += std::string(buff, buff + tlen);
-            if (std::string(buff, buff + tlen).find("0\r\n\r\n") != std::string::npos)
-                break;
         }
+        // 将那些表示的chunk长度都删除掉
+        debug_txt_ << body_;
+        change(body_);
     }
+    out_html_ << body_;
     return 0;
 }

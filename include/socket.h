@@ -25,8 +25,6 @@ public:
 
     
     int find_len(std::string text, int &header_len);
-    // 根据chunk的十进制长度进行长度控制，即一次性读取完一次chunk的内容
-    std::string recv_chunked(char *buff, int chunk_d);
     
     inline std::string get_head() { return head_; }
     inline std::string get_body() { return body_; } 
@@ -39,6 +37,7 @@ protected:
     std::string body_;
     struct sockaddr_in serv_addr_;
     std::ofstream out_html_;
+    std::ofstream debug_txt_;
     bool chunked_;
 };
 

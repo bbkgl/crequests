@@ -4,7 +4,7 @@
 #include "socket.h"
 #include "utils.h"
 
-void change(std::string &str) {
+void change_chunk(std::string &str) {
     // 首先找出所有"\r\n****\r\n"的位置
     int _r1 = -1, _r2 = -1, _n1 = -1, _n2 = -1;
     std::vector<int> pairs;
@@ -50,11 +50,11 @@ void change(std::string &str) {
         }
     }
     // DEBUG
-    for (int i = 0; i < pairs.size(); i += 2) {
-        int left = pairs[i], right = pairs[i + 1];
-        printf("(%d-%d)", pairs[i], pairs[i + 1]);
-        std::cout << str.substr(left, right - left + 1) << std::endl;
-    }
+    // for (int i = 0; i < pairs.size(); i += 2) {
+    //     int left = pairs[i], right = pairs[i + 1];
+    //     printf("(%d-%d)", pairs[i], pairs[i + 1]);
+    //     std::cout << str.substr(left, right - left + 1) << std::endl;
+    // }
     
     // 将所有的"\r\n****\r\n"去除
     int count = 0;
@@ -159,7 +159,18 @@ int Socket::recvl() {
         }
         // 将那些表示的chunk长度都删除掉
         debug_txt_ << body_;
-        change(body_);
+        change_chunk(body_);
+    } else if (body_len != -1) {
+        body_len -= body_.length();
+        while (body_len > 0) {
+            tlen = read_buff(buff, BUFF_SIZE);
+            // HTTP1.0短连接直接关闭，长连接分情况讨论
+            if (tlen == 0) break;
+            else {
+                body_len -= tlen;
+                body_ += std::string(buff, buff + tlen);
+            }
+        }
     }
     out_html_ << body_;
     return 0;

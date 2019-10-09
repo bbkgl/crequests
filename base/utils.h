@@ -1,3 +1,5 @@
+#ifndef UTILS
+#define UTILS
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -6,9 +8,10 @@
 #include <string>
 #include <fcntl.h>
 
+// 使用inline是避免生成库的时候被多次定义（本头文件被多次include）
 namespace bbkgl {
     // 这里注意参数是不能包括”http://“的
-    std::string get_host(std::string name) {
+    inline std::string get_host(std::string name) {
         struct hostent *addr = nullptr;
         addr = gethostbyname(name.c_str());
         std::string host =
@@ -16,7 +19,7 @@ namespace bbkgl {
         return host;
     }
 
-    int set_nonblock(int fd) {
+    inline int set_nonblock(int fd) {
         int flag = fcntl(fd, F_GETFL);
         flag |= O_NONBLOCK;
         fcntl(fd, F_SETFL, flag);
@@ -25,3 +28,4 @@ namespace bbkgl {
 }  // namespace bbkgl
 
 
+#endif

@@ -1,9 +1,11 @@
+#include <sstream>
 #include "request.h"
 #include "utils.h"
 
-Request::Request(std::string url, METD method) :
+Request::Request(std::string url, METD method, std::map<std::string, std::string>  headers) :
     method_(method),
-    url_(url) {
+    url_(url), 
+    headers_(headers) {
     // 首先判断协议类型
     int host_left = url_.find("://");
     if (host_left != std::string::npos) {
@@ -35,12 +37,24 @@ Request::Request(std::string url, METD method) :
         socket_ = std::make_shared<NORSocket>(bbkgl::get_host(host_), 80);
     else
         socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443);
+    // 构造函数中执行
+    run();
 }
 
 Request::~Request() {}
 
-void Request::run() {
-    std::string message;
-    if (method_ == GET) message = "GET ";
-    else if (method_ == POST) message = "GET ";
+void Request::get_response() {
+    std::stringstream message;
+    if (method_ == GET) message << "GET ";
+    else if (method_ == POST) message << "POST ";
+    message << path_ << " " << "HTTP/1.1" << "\r\n";
+    message << "Host: " << host_ << "\r\n";
+    message << "Connection: keep-alive"  << "\r\n";
+    for (const auto &it : headers_)
+        message << it.first << ": " << it.second << "\r\n";
+    message << "\r\n";
+    std::cout << message.str() << std::endl;
+    socket_->sendl(message.str());
+    socket_->recvl();
+    std::cout << socket_->get_head();
 }

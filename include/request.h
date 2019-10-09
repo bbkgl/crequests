@@ -10,12 +10,12 @@ enum SCHEME {HTTP = 0, HTTPS};
 
 class Request {
 public:
-    Request(std::string url, METD method = GET);
+    Request(std::string url, METD method = GET, std::map<std::string, std::string>  headers = {});
     ~Request();
 
 private:
     // 暂时写成void类型的
-    void run();
+    void get_response();
 
     std::string url_;
     std::string host_;
@@ -24,7 +24,7 @@ private:
     SCHEME scheme_;
     METD method_;
 
-    std::map<std::string, std::string> infos_;
+    std::map<std::string, std::string> headers_;
 
     std::shared_ptr<Socket> socket_;
 };

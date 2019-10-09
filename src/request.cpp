@@ -38,7 +38,7 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
     else
         socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443);
     // 构造函数中执行
-    run();
+    get_response();
 }
 
 Request::~Request() {}

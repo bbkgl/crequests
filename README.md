@@ -22,7 +22,6 @@ crequests目前支持的点有：
 ### GET
 
 ```cpp
-#include <memory>
 #include <map>
 #include <cstdio>
 #include "crequests.h"
@@ -32,9 +31,9 @@ int main() {
     headers["Connection"] = "keep-alive";
     std::string url = "https://www.baidu.com";
     headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
-    std::shared_ptr<Request> request = std::make_shared<Request>(url, GET, headers);
-    std::shared_ptr<Response> response = request->get_response();
-    printf("%s\n", response->get_body().c_str());
+    auto r = crequests::get(url, headers);
+    printf("%d\n", r.status_code_);
+    printf("%s\n", r.get_body().c_str());
     return 0;
 }
 ```

@@ -132,6 +132,7 @@ int Socket::recvl() {
     // 判断是否chunk编码并且找出响应头部长度
     body_len = find_len(std::string(buff, buff + tlen), header_len);
     head_ = std::string(buff, buff + header_len);
+    debug_txt_ << head_ << std::endl;
     body_ = std::string(buff + header_len + 2, buff + tlen);
     // 如果是chunk编码控制长度，则最后会出现“\r\n0\r\n\r\n”，以此判断结尾即可
     if (chunked_) {
@@ -171,6 +172,7 @@ int Socket::recvl() {
                 body_ += std::string(buff, buff + tlen);
             }
         }
+        debug_txt_ << body_;
     }
     out_html_ << body_;
     return 0;

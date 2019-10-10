@@ -38,12 +38,12 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
     else
         socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443);
     // 构造函数中执行
-    get_response();
+    run();
 }
 
 Request::~Request() {}
 
-void Request::get_response() {
+void Request::run() {
     std::stringstream message;
     if (method_ == GET) message << "GET ";
     else if (method_ == POST) message << "POST ";
@@ -53,8 +53,7 @@ void Request::get_response() {
     for (const auto &it : headers_)
         message << it.first << ": " << it.second << "\r\n";
     message << "\r\n";
-    std::cout << message.str() << std::endl;
     socket_->sendl(message.str());
     socket_->recvl();
-    std::cout << socket_->get_head();
+    response_ = std::make_shared<Response>(socket_->get_head(), socket_->get_body());
 }

@@ -3,6 +3,7 @@
 #include <memory>
 #include "sslsocket.h"
 #include "norsocket.h"
+#include "response.h"
 
 // 请求方法的枚举类型
 enum METD {GET = 0, POST};
@@ -13,9 +14,11 @@ public:
     Request(std::string url, METD method = GET, std::map<std::string, std::string>  headers = {});
     ~Request();
 
+    Response get_response();
+
 private:
     // 暂时写成void类型的
-    void get_response();
+    void run();
 
     std::string url_;
     std::string host_;
@@ -27,4 +30,6 @@ private:
     std::map<std::string, std::string> headers_;
 
     std::shared_ptr<Socket> socket_;
+
+    std::shared_ptr<Response> response_;
 };

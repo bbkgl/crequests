@@ -42,6 +42,9 @@ int main() {
 输出：
 
 ```http
+TCPConnect success!
+200
+
 <!DOCTYPE html>
 <!--STATUS OK-->
 ...
@@ -67,12 +70,12 @@ int main() {
 int main() {
     std::map<std::string, std::string> headers;
     headers["Connection"] = "keep-alive";
-    std::string data = "is_pad=1&username=XXXX&password=XXXXXX";
+    std::string data = "is_pad=1&username=21951111&password=XXXXXX";
     std::string url = "http://192.0.0.6/cgi-bin/do_login";
     headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
-    std::shared_ptr<Request> request = std::make_shared<Request>(url, POST, headers, data);
-    std::shared_ptr<Response> response = request->get_response();
-    printf("%s\n", response->get_body().c_str());
+    auto r = crequests::post(url, headers, data);
+    printf("%d\n", r.status_code_);
+    printf("%s\n", r.get_body().c_str());
     return 0;
 }
 ```
@@ -80,6 +83,43 @@ int main() {
 输出：
 
 ```cpp
+TCPConnect success!
+200
 password_error
 ```
 
+### Download
+
+```cpp
+#include <map>
+#include <cstdio>
+#include <fstream>
+#include "crequests.h"
+
+int main() {
+    std::map<std::string, std::string> headers;
+    headers["Connection"] = "keep-alive";
+    std::string url = "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1570721042152&di=60e08fccf7e7164987a4ff62e43bcfd5&imgtype=0&src=http%3A%2F%2Fi0.hdslb.com%2Fbfs%2Farticle%2F3c2753503ae4955cd4fd3ae1824bac7d15320532.jpg";
+    headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
+    auto r = crequests::get(url, headers);
+    printf("%d\n", r.status_code_);
+    std::ofstream img("jth.jpg");
+    img << r.get_body();
+    img.close();
+    return 0;
+}
+```
+
+输出：
+
+```http
+TCPConnect success!
+SSLConnect success!
+200
+```
+
+![img](media/jth.jpg)
+
+## Contact
+
+Email: zoujiakun@zju.edu.cn

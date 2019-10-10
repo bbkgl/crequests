@@ -14,7 +14,7 @@ enum SCHEME {HTTP = 0, HTTPS};
 
 class Request {
 public:
-    Request(std::string url, METD method = GET, std::map<std::string, std::string>  headers = {});
+    Request(std::string url, METD method = GET, std::map<std::string, std::string>  headers = {}, std::string data = "");
     ~Request();
 
     std::shared_ptr<Response> get_response();
@@ -35,6 +35,8 @@ private:
     std::shared_ptr<Socket> socket_;
 
     std::shared_ptr<Response> response_;
+
+    std::string data_;
 };
 
 

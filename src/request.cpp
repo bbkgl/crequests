@@ -2,10 +2,11 @@
 #include "request.h"
 #include "utils.h"
 
-Request::Request(std::string url, METD method, std::map<std::string, std::string>  headers) :
+Request::Request(std::string url, METD method, std::map<std::string, std::string>  headers, std::string data) :
     method_(method),
     url_(url), 
-    headers_(headers) {
+    headers_(headers), 
+    data_(data) {
     // 首先判断协议类型
     int host_left = url_.find("://");
     if (host_left != std::string::npos) {
@@ -50,9 +51,12 @@ void Request::run() {
     message << path_ << " " << "HTTP/1.1" << "\r\n";
     message << "Host: " << host_ << "\r\n";
     message << "Connection: keep-alive"  << "\r\n";
+    if (method_ == POST) 
+        message << "Content-Length: " << data_.length() << "\r\n";
     for (const auto &it : headers_)
         message << it.first << ": " << it.second << "\r\n";
     message << "\r\n";
+    if (method_ == POST) message << data_;
     socket_->sendl(message.str());
     socket_->recvl();
     response_ = std::make_shared<Response>(socket_->get_head(), socket_->get_body());

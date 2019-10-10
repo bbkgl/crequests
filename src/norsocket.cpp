@@ -1,7 +1,7 @@
 #include "norsocket.h"
 
-NORSocket::NORSocket(std::string addr, int port, std::string out_path) : 
-    Socket(addr, port, out_path) {
+NORSocket::NORSocket(std::string addr, int port) : 
+    Socket(addr, port) {
     int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
     if (flag == 0) 
         std::cout << "TCPConnect success!" << std::endl; 

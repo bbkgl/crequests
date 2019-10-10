@@ -23,8 +23,16 @@ Response::Response(std::string head, std::string body) :
         head_info_[std::string(key)] = value;
         line_left = line_right + 2;
     }
-
+    content_.assign(body.begin(), body.end());
+    // content_ = std::vector<uint8_t>(body.c_str(), body.c_str() + body.length());
 }
 
 Response::~Response() {}
 
+std::vector<uint8_t> Response::get_content() {
+    return content_;
+}
+
+std::string Response::get_body() {
+    return body_;
+}

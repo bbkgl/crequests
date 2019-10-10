@@ -14,7 +14,7 @@
 
 class Socket {
 public:
-    Socket(std::string addr, int port, std::string out_path);
+    Socket(std::string addr, int port);
     virtual ~Socket();
     int sendl(std::string content);
     int recvl();
@@ -36,7 +36,6 @@ protected:
     std::string head_;
     std::string body_;
     struct sockaddr_in serv_addr_;
-    std::ofstream out_html_;
     std::ofstream debug_txt_;
     bool chunked_;
 };

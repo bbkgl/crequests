@@ -1,8 +1,8 @@
 #include <errno.h>
 #include "sslsocket.h"
 
-SSLSocket::SSLSocket(std::string addr, int port, std::string out_path) : 
-    Socket(addr, port, out_path) {
+SSLSocket::SSLSocket(std::string addr, int port) : 
+    Socket(addr, port) {
     //添加SSL的加密/HASH算法 
 	SSLeay_add_ssl_algorithms();
     //客户端，服务端选择SSLv23_server_method() 

@@ -57,3 +57,7 @@ void Request::run() {
     socket_->recvl();
     response_ = std::make_shared<Response>(socket_->get_head(), socket_->get_body());
 }
+
+std::shared_ptr<Response> Request::get_response() {
+    return response_;
+}

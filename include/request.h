@@ -1,3 +1,6 @@
+#ifndef REQUEST
+#define REQUEST
+
 #include <string>
 #include <map>
 #include <memory>
@@ -14,7 +17,7 @@ public:
     Request(std::string url, METD method = GET, std::map<std::string, std::string>  headers = {});
     ~Request();
 
-    Response get_response();
+    std::shared_ptr<Response> get_response();
 
 private:
     // 暂时写成void类型的
@@ -33,3 +36,6 @@ private:
 
     std::shared_ptr<Response> response_;
 };
+
+
+#endif

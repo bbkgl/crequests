@@ -90,7 +90,7 @@ int Socket::find_len(std::string text, int &header_len) {
     return std::stoi(text.substr(left, offset));
 }
 
-Socket::Socket(std::string addr, int port, std::string out_path) :
+Socket::Socket(std::string addr, int port) :
     debug_txt_("debug.txt"),
     port_(port) {
     // 申请socket
@@ -99,13 +99,10 @@ Socket::Socket(std::string addr, int port, std::string out_path) :
     serv_addr_.sin_family = AF_INET;  //使用IPv4地址
     serv_addr_.sin_addr.s_addr = inet_addr(addr.c_str());  //具体的IP地址
     serv_addr_.sin_port = htons(port_);  //端口
-    // 输出到文件、
-    out_html_.open(out_path);
 }
 
 Socket::~Socket() {
     close(fd_);
-    out_html_.close();
     debug_txt_.close();
 }
 
@@ -172,8 +169,10 @@ int Socket::recvl() {
                 body_ += std::string(buff, buff + tlen);
             }
         }
+        // 这是因为处理chunk时需要chunk码前面有"\r\n"，而不使用chunk的时候我们需要去除
+        if (*body_.begin() == '\r' || *body_.begin() == '\n') body_.erase(body_.begin());
+        if (*body_.begin() == '\r' || *body_.begin() == '\n') body_.erase(body_.begin());
         debug_txt_ << body_;
     }
-    out_html_ << body_;
     return 0;
 }

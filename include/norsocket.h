@@ -3,7 +3,7 @@
 
 class NORSocket : public Socket {
 public:
-    NORSocket(std::string addr, int port);
+    NORSocket(std::string addr, int port, int timeout);
     ~NORSocket();
 
     int read_buff(char *buff, const int read_len);

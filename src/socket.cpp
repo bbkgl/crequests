@@ -90,9 +90,10 @@ int Socket::find_len(std::string text, int &header_len) {
     return std::stoi(text.substr(left, offset));
 }
 
-Socket::Socket(std::string addr, int port) :
+Socket::Socket(std::string addr, int port, int timeout) :
     debug_txt_("debug.txt"),
-    port_(port) {
+    port_(port),
+    timeout_(timeout) {
     // 申请socket
     fd_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     bzero(&serv_addr_, sizeof serv_addr_);

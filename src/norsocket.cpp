@@ -1,8 +1,12 @@
 #include "norsocket.h"
+#include "utils.h"
 
-NORSocket::NORSocket(std::string addr, int port) : 
-    Socket(addr, port) {
+NORSocket::NORSocket(std::string addr, int port, int timeout) : 
+    Socket(addr, port, timeout) {
+    signal(SIGALRM, bbkgl::alarmhandle);
+    alarm(timeout_);
     int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
+    alarm(0);
     if (flag == 0) 
         std::cout << "TCPConnect success!" << std::endl; 
     else
@@ -15,7 +19,10 @@ NORSocket::~NORSocket() {
 
 
 int NORSocket::read_buff(char *buff, const int read_len) {
+    signal(SIGALRM, bbkgl::alarmhandle);
+    alarm(timeout_);
     ssize_t tlen = ::read(fd_, buff, read_len);
+    alarm(0);
     return tlen;
 }
 

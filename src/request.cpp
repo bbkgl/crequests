@@ -2,11 +2,12 @@
 #include "request.h"
 #include "utils.h"
 
-Request::Request(std::string url, METD method, std::map<std::string, std::string>  headers, std::string data) :
+Request::Request(std::string url, METD method, std::map<std::string, std::string>  headers, std::string data, int timeout) :
     method_(method),
     url_(url), 
     headers_(headers), 
-    data_(data) {
+    data_(data),
+    timeout_(timeout) {
     // 首先判断协议类型
     int host_left = url_.find("://");
     if (host_left != std::string::npos) {
@@ -35,9 +36,9 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
     }
     // 生成socket对象
     if (scheme_ == HTTP)
-        socket_ = std::make_shared<NORSocket>(bbkgl::get_host(host_), 80);
+        socket_ = std::make_shared<NORSocket>(bbkgl::get_host(host_), 80, timeout_);
     else
-        socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443);
+        socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443, timeout_);
     // 构造函数中执行
     run();
 }

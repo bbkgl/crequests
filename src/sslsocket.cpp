@@ -1,16 +1,20 @@
 #include <errno.h>
 #include "sslsocket.h"
+#include "utils.h"
 
-SSLSocket::SSLSocket(std::string addr, int port) : 
-    Socket(addr, port) {
+SSLSocket::SSLSocket(std::string addr, int port, int timeout) : 
+    Socket(addr, port, timeout) {
     //添加SSL的加密/HASH算法 
 	SSLeay_add_ssl_algorithms();
     //客户端，服务端选择SSLv23_server_method() 
 	ssl_method_ = SSLv23_client_method();
     //建立新的SSL上下文 
 	ctx_ = SSL_CTX_new(ssl_method_);
+    signal(SIGALRM, bbkgl::alarmhandle);
+    alarm(timeout_);
     // TCP连接
     int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
+    alarm(0);
     if (flag == 0) 
         std::cout << "TCPConnect success!" << std::endl; 
     else {
@@ -40,7 +44,10 @@ SSLSocket::~SSLSocket() {
 }
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
+    signal(SIGALRM, bbkgl::alarmhandle);
+    alarm(timeout_);
     ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
+    alarm(0);
     return tlen;
 }
 

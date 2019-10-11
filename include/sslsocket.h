@@ -4,7 +4,7 @@
 
 class SSLSocket : public Socket {
 public:
-    SSLSocket(std::string addr, int port = 443);
+    SSLSocket(std::string addr, int port = 443, int timeout = 10);
     ~SSLSocket();
 
     int read_buff(char *buff, const int read_len);

@@ -10,6 +10,9 @@ SSLSocket::SSLSocket(std::string addr, int port, int timeout) :
 	ssl_method_ = SSLv23_client_method();
     //建立新的SSL上下文 
 	ctx_ = SSL_CTX_new(ssl_method_);
+
+    // 超时处理
+    bbkgl::tmp = "Can't connect the target server, please check your url and network!(%d)";
     signal(SIGALRM, bbkgl::alarmhandle);
     alarm(timeout_);
     // TCP连接
@@ -44,6 +47,7 @@ SSLSocket::~SSLSocket() {
 }
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
+    bbkgl::tmp = "Can't send message to the target server, please check your network!(%d)";
     signal(SIGALRM, bbkgl::alarmhandle);
     alarm(timeout_);
     ssize_t tlen = ::SSL_read(ssl_, buff, read_len);

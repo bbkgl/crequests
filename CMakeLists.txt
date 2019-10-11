@@ -20,7 +20,7 @@ file(GLOB_RECURSE SAMPLELIST RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/sample/" "${C
 foreach(curr_file ${SAMPLELIST})
     string( REPLACE ".cpp" "" program ${curr_file})
     # 将动态库链接到目标
-    message(${program})
+    # message(${program})
     add_executable(${program} ${CMAKE_CURRENT_SOURCE_DIR}/sample/${curr_file})
     target_link_libraries(${program} 
         libcrequests 

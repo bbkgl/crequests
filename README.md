@@ -16,6 +16,7 @@ crequests目前支持的点有：
 - POST可以添加请求正文，提交表单
 - 可以查看响应头的各项参数
 - 支持chunk编码控制长度和Content-length控制长度
+- 支持设置超时时间，超时则退出
 
 ## Example
 
@@ -118,6 +119,40 @@ SSLConnect success!
 ```
 
 ![img](media/jth.jpg)
+
+## Timeout
+
+超时会退出程序（这点用的信号，不太好，考虑改进）
+
+```cpp
+#include <map>
+#include <cstdio>
+#include "crequests.h"
+
+int main() {
+    std::map<std::string, std::string> headers;
+    headers["Connection"] = "keep-alive";
+    std::string url = "https://www.badu.com";
+    headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
+    // 设置超时时间为10s
+    auto r = crequests::get(url, headers, 10);
+    printf("%d\n", r.status_code_);
+    printf("%s\n", r.get_body().c_str());
+    return 0;
+}
+```
+
+输出：
+
+```http
+Can't connect the target server, please check your url and network!(14)
+```
+
+如果是网络连接失败则：
+
+```http
+Can't connect the DNS server, please check your url and network!(14)
+```
 
 ## Contact
 

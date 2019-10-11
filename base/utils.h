@@ -11,9 +11,14 @@
 #include <unistd.h>
 #include <iostream>
 
+#define TIMEOUTERROR 999
+#define BBKGLOK 0
+
 // 使用inline是避免生成库的时候被多次定义（本头文件被多次include）
 namespace bbkgl {
+    
     extern std::string tmp;
+    extern int error_num;
     
     // 错误处理函数
     void alarmhandle(int sig);

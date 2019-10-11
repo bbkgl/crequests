@@ -4,11 +4,8 @@
 NORSocket::NORSocket(std::string addr, int port, int timeout) : 
     Socket(addr, port, timeout) {
     // TCP连接超时处理
-    std::string tmp = "Can't connect the target server, please check your url and network!(%d)";
-    signal(SIGALRM, bbkgl::alarmhandle);
-    alarm(timeout_);
     int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
-    alarm(0);
+
     if (flag == 0) 
         std::cout << "TCPConnect success!" << std::endl; 
     else
@@ -21,11 +18,7 @@ NORSocket::~NORSocket() {
 
 
 int NORSocket::read_buff(char *buff, const int read_len) {
-    std::string tmp = "Can't send message to the target server, please check your network!(%d)";
-    signal(SIGALRM, bbkgl::alarmhandle);
-    alarm(timeout_);
     ssize_t tlen = ::read(fd_, buff, read_len);
-    alarm(0);
     return tlen;
 }
 

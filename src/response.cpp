@@ -24,7 +24,13 @@ Response::Response(std::string head, std::string body) :
         line_left = line_right + 2;
     }
     content_.assign(body.begin(), body.end());
-    // content_ = std::vector<uint8_t>(body.c_str(), body.c_str() + body.length());
+}
+
+Response::Response(int sig) {
+    if (sig == -1) {
+        status_code_ = -1;
+        body_ = "ERROR";
+    }
 }
 
 Response::~Response() {}

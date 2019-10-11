@@ -34,13 +34,17 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
         host_ = url_.substr(host_left);
         path_ = "/";
     }
-    // 生成socket对象
-    if (scheme_ == HTTP)
-        socket_ = std::make_shared<NORSocket>(bbkgl::get_host(host_), 80, timeout_);
-    else
-        socket_ = std::make_shared<SSLSocket>(bbkgl::get_host(host_), 443, timeout_);
-    // 构造函数中执行
-    run();
+    // 首先获得ip
+    std::string server_ip = bbkgl::get_host(host_);
+    if (bbkgl::error_num == BBKGLOK) {
+        // 生成socket对象
+        if (scheme_ == HTTP)
+            socket_ = std::make_shared<NORSocket>(server_ip, 80, timeout_);
+        else
+            socket_ = std::make_shared<SSLSocket>(server_ip, 443, timeout_);
+        // 构造函数中执行
+        run();
+    }
 }
 
 Request::~Request() {}
@@ -64,5 +68,8 @@ void Request::run() {
 }
 
 std::shared_ptr<Response> Request::get_response() {
-    return response_;
+    if (bbkgl::error_num == BBKGLOK)
+        return response_;
+    else
+        return std::make_shared<Response>(-1);
 }

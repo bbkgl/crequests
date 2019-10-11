@@ -136,6 +136,8 @@ int Socket::recvl() {
     if (chunked_) {
         while (tlen) {
             tlen = read_buff(buff, BUFF_SIZE);
+            // 如果出现了超时
+            if (bbkgl::error_num != 0) return -1;
             // HTTP1.0短连接直接关闭，长连接分情况讨论
             if (tlen == 0) break;
             else {

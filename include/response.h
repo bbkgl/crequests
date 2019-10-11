@@ -8,6 +8,7 @@
 class Response {
 public:
     Response(std::string head, std::string body);
+    Response(int sig);
     ~Response();
 
     std::vector<uint8_t> get_content();

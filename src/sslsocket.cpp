@@ -11,28 +11,21 @@ SSLSocket::SSLSocket(std::string addr, int port, int timeout) :
     //建立新的SSL上下文 
 	ctx_ = SSL_CTX_new(ssl_method_);
 
-    // 超时处理
-    bbkgl::tmp = "Can't connect the target server, please check your url and network!(%d)";
-    signal(SIGALRM, bbkgl::alarmhandle);
-    alarm(timeout_);
     // TCP连接
     int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
-    alarm(0);
     if (flag == 0) 
         std::cout << "TCPConnect success!" << std::endl; 
-    else {
+    else
         std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
-        exit(1);
-    }
+
     // 创建ssl
     ssl_ = SSL_new(ctx_);
     //将SSL与TCP SOCKET 连接 
-	SSL_set_fd(ssl_ , fd_);
-	//SSL连接 
+    SSL_set_fd(ssl_ , fd_);
+    //SSL连接 
     flag = SSL_connect(ssl_);
     if(flag == -1) {
         std::cerr << "SSL ACCEPT error ";
-        exit(1);
     }
     std::cout << "SSLConnect success!" << std::endl;
 }
@@ -47,11 +40,7 @@ SSLSocket::~SSLSocket() {
 }
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
-    bbkgl::tmp = "Can't send message to the target server, please check your network!(%d)";
-    signal(SIGALRM, bbkgl::alarmhandle);
-    alarm(timeout_);
     ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
-    alarm(0);
     return tlen;
 }
 

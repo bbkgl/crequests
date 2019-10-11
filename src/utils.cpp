@@ -20,8 +20,9 @@ namespace bbkgl {
         addr = gethostbyname(name.c_str());
         // 如果是网络问题，这里会返回空指针
         if (!addr)
-            std::cerr << "Can't connect the DNS or server, please check your url and network!" << std::endl;
-        host = std::string(inet_ntoa(*(struct in_addr *)addr->h_addr_list[0]));
+            std::cerr << "Can't connect the DNS, please check your url and network!" << std::endl;
+        else
+            host = std::string(inet_ntoa(*(struct in_addr *)addr->h_addr_list[0]));
         alarm(0);
         sigrelse(SIGALRM);
         return host;

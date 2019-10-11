@@ -12,7 +12,7 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src SRCLIST)
 # message(${SRCLIST})
 
 # 将源文件打包成动态库
-add_library(libcrequests SHARED ${SRCLIST})
+add_library(crequests SHARED ${SRCLIST})
 
 # 添加生成对象
 file(GLOB_RECURSE SAMPLELIST RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/sample/" "${CMAKE_CURRENT_SOURCE_DIR}/sample/*.cpp")
@@ -23,7 +23,7 @@ foreach(curr_file ${SAMPLELIST})
     # message(${program})
     add_executable(${program} ${CMAKE_CURRENT_SOURCE_DIR}/sample/${curr_file})
     target_link_libraries(${program} 
-        libcrequests 
+        crequests 
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libssl.so
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libcrypto.so
     )

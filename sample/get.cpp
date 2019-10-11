@@ -5,7 +5,7 @@
 int main() {
     std::map<std::string, std::string> headers;
     headers["Connection"] = "keep-alive";
-    std::string url = "https://www.baidu.com";
+    std::string url = "https://www.fasfasfasfsdgdfagregregdfgr.com";
     headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
     // 设置超时时间为10s
     auto r = crequests::get(url, headers, 3);

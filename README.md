@@ -2,11 +2,11 @@
 
 ## Introduction
 
-crequests是根据Python requests库写的一个C++ HTTP请求库，使用C++11编写，目前支持GET/POST方法，支持http/https访问，但暂时只能在Linux上使用。
+crequests是根据Python requests库写的一个C++ HTTP请求库，使用C++11编写，目前支持GET/POST方法，支持HTTP/HTTPS访问，但暂时只能在Linux上使用。
 
 ## Features
 
-访问https站点需要openssl，所以本项目中已经引入了openssl的头文件和动态库，可直接使用，不需要额外安装，但目前只适配linux，windows后面会跟上。
+访问https站点需要openssl，所以本项目中已经引入了openssl的头文件和动态库，可直接使用，不需要额外安装，但目前只适配linux，windows后面会跟上（windows上真的好麻烦）。
 
 crequests目前支持的点有：
 

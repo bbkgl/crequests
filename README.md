@@ -2,7 +2,7 @@
 
 ## Introduction
 
-crequests是根据Python requests库写的一个C++ HTTP请求库，使用C++11编写，目前支持GET/POST方法，支持HTTP/HTTPS访问，但暂时只能在Linux上使用。
+crequests是根据Python requests库的功能仿写的一个C++ HTTP请求库，使用C++11编写，目前支持GET/POST/HEAD方法，支持HTTP/HTTPS访问，但暂时只能在Linux上使用。
 
 ## Features
 
@@ -11,12 +11,12 @@ crequests是根据Python requests库写的一个C++ HTTP请求库，使用C++11�
 crequests目前支持的点有：
 
 - 使用了openssl支持https访问
-- 可以使用GET、POST方法
+- 可以使用GET、POST、HEAD方法
 - 支持自定义请求头
 - POST可以添加请求正文，提交表单
 - 可以查看响应头的各项参数
 - 支持chunk编码控制长度和Content-length控制长度
-- 支持设置超时时间，超时则退出（取消了使用信号机制，后面更新其他方案）
+- 支持设置超时时间，超时则返回一个状态吗为-1的response对象
 
 ## Example
 
@@ -194,7 +194,7 @@ SSLConnect success!
 
 ## Timeout
 
-超时会退出程序（这点用的信号，不太好，考虑改进）
+超时会退出程序，使用select和信号机制检测超时
 
 ```cpp
 #include <map>
@@ -217,7 +217,9 @@ int main() {
 输出：
 
 ```http
-Can't connect the target server, please check your url and network!(14)
+TCPConnect timeout!
+-1
+ERROR
 ```
 
 如果是网络连接失败则：

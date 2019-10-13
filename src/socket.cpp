@@ -115,7 +115,7 @@ int Socket::sendl(std::string content) {
         if (tlen >= 0)
             remaining -= tlen;
         else {
-            usleep(10000);
+            usleep(1000);
         }
         left += tlen;
     }

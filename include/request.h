@@ -9,7 +9,7 @@
 #include "response.h"
 
 // 请求方法的枚举类型
-enum METD {GET = 0, POST};
+enum METD {GET = 0, POST, HEAD};
 enum SCHEME {HTTP = 0, HTTPS};
 
 class Request {

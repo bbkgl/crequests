@@ -90,10 +90,11 @@ int Socket::find_len(std::string text, int &header_len) {
     return std::stoi(text.substr(left, offset));
 }
 
-Socket::Socket(std::string addr, int port, int timeout) :
+Socket::Socket(std::string addr, int port, int timeout, bool ishead) :
     debug_txt_("debug.txt"),
     port_(port),
-    timeout_(timeout) {
+    timeout_(timeout),
+    ishead_(ishead) {
     // 申请socket
     fd_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     bzero(&serv_addr_, sizeof serv_addr_);
@@ -132,6 +133,11 @@ int Socket::recvl() {
     head_ = std::string(buff, buff + header_len);
     debug_txt_ << head_ << std::endl;
     body_ = std::string(buff + header_len + 2, buff + tlen);
+    // 如果是HEAD方法，直接返回
+    if (ishead_) {
+        body_ = "";
+        return 0;
+    }
     // 如果是chunk编码控制长度，则最后会出现“\r\n0\r\n\r\n”，以此判断结尾即可
     if (chunked_) {
         while (tlen) {

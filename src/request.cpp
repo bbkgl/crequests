@@ -42,6 +42,9 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
             socket_ = std::make_shared<NORSocket>(server_ip, 80, timeout_);
         else
             socket_ = std::make_shared<SSLSocket>(server_ip, 443, timeout_);
+        // 如果是HEAD方法，提醒socket只接收请求头
+        if (method_ == HEAD)
+            socket_->set_head_method(true);
         // 构造函数中执行
         run();
     }
@@ -53,6 +56,7 @@ void Request::run() {
     std::stringstream message;
     if (method_ == GET) message << "GET ";
     else if (method_ == POST) message << "POST ";
+    else if (method_ == HEAD) message << "HEAD ";
     message << path_ << " " << "HTTP/1.1" << "\r\n";
     message << "Host: " << host_ << "\r\n";
     message << "Connection: keep-alive"  << "\r\n";

@@ -14,7 +14,7 @@
 
 class Socket {
 public:
-    Socket(std::string addr, int port, int timeout);
+    Socket(std::string addr, int port, int timeout, bool ishead = false);
     virtual ~Socket();
     int sendl(std::string content);
     int recvl();
@@ -29,6 +29,8 @@ public:
     inline std::string get_head() { return head_; }
     inline std::string get_body() { return body_; } 
 
+    inline void set_head_method(bool ishead) { ishead_ = ishead; }
+
 // 属性
 protected:
     int port_;
@@ -39,6 +41,7 @@ protected:
     std::ofstream debug_txt_;
     bool chunked_;
     int timeout_;
+    bool ishead_;
 };
 
 #endif

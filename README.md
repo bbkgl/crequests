@@ -16,7 +16,7 @@ crequests目前支持的点有：
 - POST可以添加请求正文，提交表单
 - 可以查看响应头的各项参数
 - 支持chunk编码控制长度和Content-length控制长度
-- 支持设置超时时间，超时则退出
+- 支持设置超时时间，超时则退出（取消了使用信号机制，后面更新其他方案）
 
 ## Example
 
@@ -43,6 +43,7 @@ int main() {
 
 ```http
 TCPConnect success!
+SSLConnect success!
 200
 
 <!DOCTYPE html>
@@ -66,6 +67,7 @@ TCPConnect success!
 #include "crequests.h"
 
 int main() {
+    // 这里换成自己的cookie
     std::string cookie = "XXXXX*****XJHJSHJHSBJFBJHBSFJHB";
     std::map<std::string, std::string> headers;
     headers["Connection"] = "keep-alive";
@@ -80,7 +82,25 @@ int main() {
 }
 ```
 
+输出：
 
+```http
+TCPConnect success!
+SSLConnect success!
+200
+
+<!DOCTYPE html>
+<!--STATUS OK-->
+...
+
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+...
+</body>
+</html>
+```
 
 ### POST
 
@@ -94,7 +114,7 @@ int main() {
 int main() {
     std::map<std::string, std::string> headers;
     headers["Connection"] = "keep-alive";
-    std::string data = "is_pad=1&username=21951111&password=XXXXXX";
+    std::string data = "is_pad=1&username=2195XXXX&password=XXXXXX";
     std::string url = "http://192.0.0.6/cgi-bin/do_login";
     headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
     auto r = crequests::post(url, headers, data);
@@ -110,6 +130,34 @@ int main() {
 TCPConnect success!
 200
 password_error
+```
+
+### HEAD
+
+```cpp
+#include <map>
+#include <cstdio>
+#include "crequests.h"
+
+int main() {
+    std::map<std::string, std::string> headers;
+    headers["Connection"] = "keep-alive";
+    std::string url = "https://www.baidu.com";
+    headers.insert(std::make_pair("User-Agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.90 Safari/537.36"));
+    // 设置超时时间为10s
+    auto r = crequests::head(url, headers, 3);
+    printf("%d\n", r.status_code_);
+    printf("%s\n", r.get_body().c_str());
+    return 0;
+}
+```
+
+输出：
+
+```cpp
+TCPConnect success!
+SSLConnect success!
+200
 ```
 
 ### Download

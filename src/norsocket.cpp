@@ -3,13 +3,7 @@
 
 NORSocket::NORSocket(std::string addr, int port, int timeout) : 
     Socket(addr, port, timeout) {
-    // TCP连接超时处理
-    int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
-
-    if (flag == 0) 
-        std::cout << "TCPConnect success!" << std::endl; 
-    else
-        std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
+    
 }
 
 NORSocket::~NORSocket() {
@@ -18,7 +12,10 @@ NORSocket::~NORSocket() {
 
 
 int NORSocket::read_buff(char *buff, const int read_len) {
-    ssize_t tlen = ::read(fd_, buff, read_len);
+    int flag = select(fd_ + 1, &rfds_, nullptr, nullptr, &time_out_);
+    ssize_t tlen = -1;
+    if (flag && FD_ISSET(fd_, &rfds_))
+        ssize_t tlen = ::read(fd_, buff, read_len);
     return tlen;
 }
 

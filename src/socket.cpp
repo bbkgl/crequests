@@ -93,7 +93,6 @@ int Socket::find_len(std::string text, int &header_len) {
 Socket::Socket(std::string addr, int port, int timeout, bool ishead) :
     debug_txt_("debug.txt"),
     port_(port),
-    timeout_(timeout),
     ishead_(ishead) {
     // 申请socket
     fd_ = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -101,6 +100,43 @@ Socket::Socket(std::string addr, int port, int timeout, bool ishead) :
     serv_addr_.sin_family = AF_INET;  //使用IPv4地址
     serv_addr_.sin_addr.s_addr = inet_addr(addr.c_str());  //具体的IP地址
     serv_addr_.sin_port = htons(port_);  //端口
+
+    // 设置超时时间，单位是秒
+    time_out_.tv_sec = timeout;
+    time_out_.tv_usec = 0;
+    FD_ZERO(&rfds_);
+    FD_SET(fd_, &rfds_);
+    FD_ZERO(&wfds_);
+    FD_SET(fd_, &wfds_);
+
+    // TCP连接和超时控制
+    // 先设置成非阻塞
+    bbkgl::set_nonblock(fd_);
+    int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
+    if (flag == 0) {
+        // 连接成功需要设置回阻塞，不然后面会出问题
+        std::cout << "TCPConnect success!" << std::endl; 
+        bbkgl::set_block(fd_);
+    }
+    else {
+        if (errno != EINPROGRESS) {
+            std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
+            bbkgl::error_num = TCPERROR;
+        }
+        else {
+            int res = select(fd_ + 1, nullptr, &wfds_, nullptr, &time_out_);
+            if (res < 0) {
+                std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
+                bbkgl::error_num = TCPERROR;
+            } else if (res == 0) {
+                std::cerr << "TCPConnect timeout!" << std::endl;
+                bbkgl::error_num = TIMEOUTERROR;
+            } else {
+                std::cout << "TCPConnect success!" << std::endl; 
+                bbkgl::set_block(fd_);          
+            }
+        }
+    }
 }
 
 Socket::~Socket() {
@@ -142,8 +178,12 @@ int Socket::recvl() {
     if (chunked_) {
         while (tlen) {
             tlen = read_buff(buff, BUFF_SIZE);
-            // 如果出现了超时
-            if (bbkgl::error_num != 0) return -1;
+            // 说明出现超时了
+            if (tlen == -1) {
+                bbkgl::error_num = TIMEOUTERROR;
+                std::cerr << "Can't recv message from server, please check your url and network!" << std::endl;
+                break;
+            }
             // HTTP1.0短连接直接关闭，长连接分情况讨论
             if (tlen == 0) break;
             else {
@@ -173,7 +213,11 @@ int Socket::recvl() {
             tlen = read_buff(buff, BUFF_SIZE);
             // HTTP1.0短连接直接关闭，长连接分情况讨论
             if (tlen == 0) break;
-            else {
+            else if (tlen == -1) {
+                bbkgl::error_num = TIMEOUTERROR;
+                std::cerr << "Can't recv message from server, please check your url and network!" << std::endl;
+                break;
+            } else {
                 body_len -= tlen;
                 body_ += std::string(buff, buff + tlen);
             }

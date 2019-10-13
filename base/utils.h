@@ -11,8 +11,11 @@
 #include <unistd.h>
 #include <iostream>
 
-#define TIMEOUTERROR 999
 #define BBKGLOK 0
+#define TIMEOUTERROR 999
+#define DNSERROR 1
+#define TCPERROR 2
+#define SSLERROR 3
 
 // 使用inline是避免生成库的时候被多次定义（本头文件被多次include）
 namespace bbkgl {
@@ -27,6 +30,7 @@ namespace bbkgl {
     std::string get_host(std::string name);
 
     int set_nonblock(int fd);
+    int set_block(int fd);
 }  // namespace bbkgl
 
 

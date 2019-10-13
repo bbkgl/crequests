@@ -3,6 +3,9 @@ project(crequests)
 set(CMAKE_CXX_STANDARD 11)
 add_definitions(-g)
 
+# 多线程
+find_package(Threads)
+
 # 加入所有头文件
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR}/base)
 
@@ -26,5 +29,6 @@ foreach(curr_file ${SAMPLELIST})
         crequests 
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libssl.so
         ${CMAKE_CURRENT_SOURCE_DIR}/lib/libcrypto.so
+        ${CMAKE_THREAD_LIBS_INIT}
     )
 endforeach(curr_file)

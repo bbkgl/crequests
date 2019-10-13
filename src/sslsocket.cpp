@@ -11,23 +11,20 @@ SSLSocket::SSLSocket(std::string addr, int port, int timeout) :
     //建立新的SSL上下文 
 	ctx_ = SSL_CTX_new(ssl_method_);
 
-    // TCP连接
-    int flag = ::connect(fd_, (struct sockaddr*)&serv_addr_, sizeof(serv_addr_));
-    if (flag == 0) 
-        std::cout << "TCPConnect success!" << std::endl; 
-    else
-        std::cerr << "TCPConnect failed!(" << flag << ")" << std::endl;
-
     // 创建ssl
     ssl_ = SSL_new(ctx_);
     //将SSL与TCP SOCKET 连接 
     SSL_set_fd(ssl_ , fd_);
-    //SSL连接 
-    flag = SSL_connect(ssl_);
-    if(flag == -1) {
-        std::cerr << "SSL ACCEPT error ";
+    //SSL连接
+    int flag = -1; 
+    if (bbkgl::error_num == BBKGLOK) {
+        flag = SSL_connect(ssl_);
+        if(flag == -1) {
+            std::cerr << "SSL ACCEPT error " << std::endl;
+            bbkgl::error_num = SSLERROR;
+        } else
+            std::cout << "SSLConnect success!" << std::endl;
     }
-    std::cout << "SSLConnect success!" << std::endl;
 }
 
 SSLSocket::~SSLSocket() {
@@ -40,7 +37,10 @@ SSLSocket::~SSLSocket() {
 }
 
 int SSLSocket::read_buff(char *buff, const int read_len) {
-    ssize_t tlen = ::SSL_read(ssl_, buff, read_len);
+    int flag = select(fd_ + 1, &rfds_, nullptr, nullptr, &time_out_);
+    ssize_t tlen = -1;
+    if (flag && FD_ISSET(fd_, &rfds_))
+        tlen = ::SSL_read(ssl_, buff, read_len);
     return tlen;
 }
 

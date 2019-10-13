@@ -46,7 +46,7 @@ Request::Request(std::string url, METD method, std::map<std::string, std::string
         if (method_ == HEAD)
             socket_->set_head_method(true);
         // 构造函数中执行
-        run();
+        if (bbkgl::error_num == BBKGLOK) run();
     }
 }
 

@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <string>
 #include <fstream>
+#include <sys/select.h>
+#include <sys/time.h>
 
 #define BUFF_SIZE 4096
 #define CRLF "\r\n"
@@ -27,7 +29,8 @@ public:
     int find_len(std::string text, int &header_len);
     
     inline std::string get_head() { return head_; }
-    inline std::string get_body() { return body_; } 
+    inline std::string get_body() { return body_; }
+    int getfd() { return fd_; }
 
     inline void set_head_method(bool ishead) { ishead_ = ishead; }
 
@@ -40,8 +43,10 @@ protected:
     struct sockaddr_in serv_addr_;
     std::ofstream debug_txt_;
     bool chunked_;
-    int timeout_;
     bool ishead_;
+    fd_set rfds_;  // 可读集合
+    fd_set wfds_;  // 可写集合
+    timeval time_out_;
 };
 
 #endif
